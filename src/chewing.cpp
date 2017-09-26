@@ -20,9 +20,6 @@ char convert_to_Eng(QString input_bopomofo){
          char Eng;
     }BtoE;
 
-    char character;
-    int i;
-
     BtoE table[41] =
     {
         {"ㄅ", '1'},{"ㄉ",'2'},{"ˇ",'3'},{"ˋ",'4'},{"ㄓ",'5'},{"ˊ",'6'},
@@ -34,16 +31,12 @@ char convert_to_Eng(QString input_bopomofo){
         {  "ㄙ", 'n' },{  "ㄩ", 'm' },{  "ㄝ", ',' },{  "ㄡ", '.' },{  "ㄥ", '/' },
     };
 
-    for(i=0;i<=40;i++){
+    for(int i=0;i<=40;i++){
        if(input_bopomofo==table[i].bopomofo){
-           character = table[i].Eng;
-           break;
+           return table[i].Eng;
        }
-        else{
-            character = input_bopomofo.toLocal8Bit ().data()[0];
-        }
     }
-    return character;
+    return input_bopomofo.toLocal8Bit ().data()[0];
 }
 
 /*generate cnadidate string for Chinese words or symbols*/
