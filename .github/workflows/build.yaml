@@ -1,0 +1,22 @@
+name: Build rpm package
+
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+    - name: Prepare
+      shell: bash
+      run: |
+        DEBIAN_FRONTEND=noninteractive apt-get install qtbase5-dev qtdeclarative5-dev make g++ libchewing3-dev rpm dpkg-dev -y
+    - name: Build
+      shell: bash
+      run: |
+        qmake CONFIG+=unittest
+        make
+    - name: Test
+      shell: bash
+      run: |
+        QT_QPA_PLATFORM=offscreen LD_LIBRARY_PATH=qmlchewing:$LD_LIBRARY_PATH ./tests/tests

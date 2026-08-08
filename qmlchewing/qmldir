@@ -1,2 +1,2 @@
 module H.H.chewing
-plugin QmlChewing
+plugin qmlchewing

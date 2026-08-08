@@ -1,5 +1,5 @@
 TEMPLATE = lib
-TARGET = QmlChewing
+TARGET = qmlchewing
 QT += qml quick
 CONFIG += qt plugin c++11
 
@@ -8,12 +8,14 @@ uri = H.H.chewing
 
 # Input
 SOURCES += \
-    qmlchewing_plugin.cpp \
-    chewing.cpp
+    src/qmlchewing_plugin.cpp \
+    src/chewing.cpp
+
+INCLUDEPATH += inc
 
 HEADERS += \
-    qmlchewing_plugin.h \
-    chewing.h
+    inc/qmlchewing_plugin.h \
+    inc/chewing.h
 
 DISTFILES = qmldir
 
