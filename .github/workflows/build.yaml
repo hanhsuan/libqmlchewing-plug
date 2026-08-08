@@ -12,8 +12,8 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
-        apt update
-        apt install qtbase5-dev qtdeclarative5-dev make g++ libchewing3-dev rpm dpkg-dev -y
+        sudo apt-get update
+        sudo apt-get install qtbase5-dev qtdeclarative5-dev make g++ libchewing3-dev rpm dpkg-dev -y
     - name: Build
       shell: bash
       run: |
