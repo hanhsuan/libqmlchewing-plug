@@ -1,4 +1,4 @@
-name: Build rpm package
+name: Build and test
 
 on: workflow_dispatch
 
@@ -9,8 +9,11 @@ jobs:
     - uses: actions/checkout@v6
     - name: Prepare
       shell: bash
+      env:
+        DEBIAN_FRONTEND: noninteractive
       run: |
-        DEBIAN_FRONTEND=noninteractive apt-get install qtbase5-dev qtdeclarative5-dev make g++ libchewing3-dev rpm dpkg-dev -y
+        apt-get update
+        apt-get install qtbase5-dev qtdeclarative5-dev make g++ libchewing3-dev rpm dpkg-dev -y
     - name: Build
       shell: bash
       run: |
