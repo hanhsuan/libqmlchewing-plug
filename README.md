@@ -47,7 +47,7 @@ rpmbuild --nodeps --define "_topdir $PWD" --define "_sourcedir $PWD/qmlchewing" 
 QT_QPA_PLATFORM=offscreen LD_LIBRARY_PATH=qmlchewing:$LD_LIBRARY_PATH ./tests/tests
 ```
 
-## Build with Sailfish OS SDK
+## Build with Sailfish OS SDK 3.13.5
 
 Install the libchewing package in a development environment, built from [source code](https://github.com/hanhsuan/SailfishOS-libchewing) by yourself, or use the prebuilt [one](https://github.com/hanhsuan/SailfishOS-libchewing/releases). The architecture should be the same as your environment.
 
