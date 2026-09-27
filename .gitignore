@@ -1,0 +1,12 @@
+Makefile
+.qmake.stash
+moc_predefs.h
+*.moc
+*.o
+*.so
+BUILD/
+BUILDROOT/
+RPMS/
+*-build/
+documentation.list
+rsyncd.conf
