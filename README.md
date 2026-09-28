@@ -59,10 +59,10 @@ Install the libchewing package in a development environment, built from [source 
 sfdk build-shell --maintain
 ```
 
-* Install the rpm package
+* Install the rpm package (Choose the architecture that works best for you)
 
 ```bash
-zypper in libchewing-0.8.5-0.aarch64.rpm
+zypper in libchewing-devel-0.8.5-0.aarch64.rpm
 ```
 
 * Back to the host and build
