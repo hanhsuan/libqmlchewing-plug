@@ -1,49 +1,68 @@
 #include "chewing.h"
 
+namespace {
+
+ChewingContext *new_context() {
+  ChewingContext *ct = chewing_new();
+  if (!ct) {
+    qFatal("Chewing: failed to create ChewingContext");
+    return nullptr;
+  }
+  chewing_set_maxChiSymbolLen(ct, 10);
+  chewing_set_candPerPage(ct, 9);
+  return ct;
+}
+
+} // namespace
+
 Chewing::Chewing(QQuickItem *parent) : QQuickItem(parent) {
   this->codec = QTextCodec::codecForName("UTF-8");
-  this->ct = chewing_new();
-  chewing_set_maxChiSymbolLen(this->ct, 10);
-  chewing_set_candPerPage(this->ct, 9);
+  this->ct = new_context();
 }
 
 Chewing::~Chewing() { chewing_delete(this->ct); }
 
-char convert_to_Eng(QString input_bopomofo) {
-  typedef struct bopomofo_to_Eng {
-    QString bopomofo;
+char convert_to_Eng(const QString &input_bopomofo) {
+  struct bopomofo_to_Eng {
+    QChar bopomofo;
     char Eng;
-  } BtoE;
-
-  BtoE table[41] = {
-      {"ㄅ", '1'}, {"ㄉ", '2'}, {"ˇ", '3'},  {"ˋ", '4'},  {"ㄓ", '5'},
-      {"ˊ", '6'},  {"˙", '7'},  {"ㄚ", '8'}, {"ㄞ", '9'}, {"ㄢ", '0'},
-      {"ㄦ", '-'}, {"ㄆ", 'q'}, {"ㄊ", 'w'}, {"ㄍ", 'e'}, {"ㄐ", 'r'},
-      {"ㄔ", 't'}, {"ㄗ", 'y'}, {"ㄧ", 'u'}, {"ㄛ", 'i'}, {"ㄟ", 'o'},
-      {"ㄣ", 'p'}, {"ㄇ", 'a'}, {"ㄋ", 's'}, {"ㄎ", 'd'}, {"ㄑ", 'f'},
-      {"ㄕ", 'g'}, {"ㄘ", 'h'}, {"ㄨ", 'j'}, {"ㄜ", 'k'}, {"ㄠ", 'l'},
-      {"ㄤ", ';'}, {"ㄈ", 'z'}, {"ㄌ", 'x'}, {"ㄏ", 'c'}, {"ㄒ", 'v'},
-      {"ㄖ", 'b'}, {"ㄙ", 'n'}, {"ㄩ", 'm'}, {"ㄝ", ','}, {"ㄡ", '.'},
-      {"ㄥ", '/'},
   };
 
-  for (int i = 0; i <= 40; i++) {
-    if (input_bopomofo == table[i].bopomofo) {
+  static const struct bopomofo_to_Eng table[] = {
+      {u'ㄅ', '1'}, {u'ㄉ', '2'}, {u'ˇ', '3'},  {u'ˋ', '4'},  {u'ㄓ', '5'},
+      {u'ˊ', '6'},  {u'˙', '7'},  {u'ㄚ', '8'}, {u'ㄞ', '9'}, {u'ㄢ', '0'},
+      {u'ㄦ', '-'}, {u'ㄆ', 'q'}, {u'ㄊ', 'w'}, {u'ㄍ', 'e'}, {u'ㄐ', 'r'},
+      {u'ㄔ', 't'}, {u'ㄗ', 'y'}, {u'ㄧ', 'u'}, {u'ㄛ', 'i'}, {u'ㄟ', 'o'},
+      {u'ㄣ', 'p'}, {u'ㄇ', 'a'}, {u'ㄋ', 's'}, {u'ㄎ', 'd'}, {u'ㄑ', 'f'},
+      {u'ㄕ', 'g'}, {u'ㄘ', 'h'}, {u'ㄨ', 'j'}, {u'ㄜ', 'k'}, {u'ㄠ', 'l'},
+      {u'ㄤ', ';'}, {u'ㄈ', 'z'}, {u'ㄌ', 'x'}, {u'ㄏ', 'c'}, {u'ㄒ', 'v'},
+      {u'ㄖ', 'b'}, {u'ㄙ', 'n'}, {u'ㄩ', 'm'}, {u'ㄝ', ','}, {u'ㄡ', '.'},
+      {u'ㄥ', '/'},
+  };
+
+  if (input_bopomofo.isEmpty()) {
+    return '\0';
+  }
+  const QChar pressed = input_bopomofo.at(0);
+  for (unsigned i = 0; i < sizeof(table) / sizeof(table[0]); i++) {
+    if (pressed == table[i].bopomofo) {
       return table[i].Eng;
     }
   }
-  return input_bopomofo.toLocal8Bit().data()[0];
+  return pressed.unicode() < 0x80 ? static_cast<char>(pressed.unicode()) : '\0';
 }
 
-/*generate cnadidate string for Chinese words or symbols*/
 QString generateCandidate(ChewingContext *ctx) {
   QString candidate_string;
-  chewing_cand_open(ctx);
+  if (chewing_cand_open(ctx) != 0) {
+    return candidate_string;
+  }
+  chewing_cand_Enumerate(ctx);
   while (chewing_cand_hasNext(ctx)) {
     char *str = chewing_cand_String(ctx);
     if (str) {
-      candidate_string += QString(QByteArray(str));
-      candidate_string += " ";
+      candidate_string += QString::fromUtf8(str);
+      candidate_string += QLatin1Char(' ');
       chewing_free(str);
     }
   }
@@ -51,61 +70,46 @@ QString generateCandidate(ChewingContext *ctx) {
   return candidate_string;
 }
 
-/*Reset ChewingContext*/
 void Chewing::handleReset() {
   chewing_delete(this->ct);
-  this->ct = chewing_new();
+  this->ct = new_context();
 }
 
-/*This function will transfer pressed key to chewing engine.*/
-void Chewing::handleDefault(QString str) {
+void Chewing::handleDefault(const QString &str) {
   chewing_handle_Default(this->ct, convert_to_Eng(str));
 }
 
-/*This function will transfer space key to chewing engine
-  when you don't have keyboard to input.*/
 void Chewing::handleSpace() { chewing_handle_Space(this->ct); }
 
-/*This function will transfer backspace key to chewing engine.*/
 void Chewing::handleBackSpace() { chewing_handle_Backspace(this->ct); }
 
-/*This function will transfer enter key to chewing engine
-  when you don't have keyboard to input.*/
 QString Chewing::handleEnter() {
   chewing_handle_Enter(this->ct);
-  QString buf = chewing_commit_String(this->ct);
-  return buf;
+  char *buf = chewing_commit_String(this->ct);
+  QString committed = buf ? QString::fromUtf8(buf) : QString();
+  chewing_free(buf);
+  chewing_delete(this->ct);
+  this->ct = new_context();
+  return committed;
 }
 
-/*This function will return preedit string that include bopomofo.*/
 QString Chewing::getPreedit() {
   QString preedit_string;
   if (chewing_buffer_Check(this->ct)) {
     char *buf = chewing_buffer_String(this->ct);
 
     if (buf) {
-      preedit_string = QString(QByteArray(buf));
+      preedit_string = QString::fromUtf8(buf);
       chewing_free(buf);
     }
   }
 
   const char *bopomofo_str = chewing_bopomofo_String_static(this->ct);
   if (bopomofo_str) {
-    preedit_string += QString(QByteArray(bopomofo_str));
+    preedit_string += QString::fromUtf8(bopomofo_str);
   }
 
   return preedit_string;
 }
 
-/*This function will return candidate string of Chinese words.*/
 QString Chewing::getCandidate() { return generateCandidate(this->ct); }
-
-/*This function will return candidate string of symbols.*/
-QString Chewing::getSymbol() {
-  this->ct = chewing_new();
-  chewing_handle_Default(this->ct, '`');
-  chewing_handle_Down(this->ct);
-  chewing_cand_Enumerate(this->ct);
-  chewing_handle_Default(this->ct, '3');
-  return generateCandidate(this->ct);
-}

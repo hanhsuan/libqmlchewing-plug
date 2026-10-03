@@ -2,7 +2,7 @@ TEMPLATE = app
 TARGET = tests
 QT += qml quick testlib
 CONFIG += console c++11 automoc
-LIBS += -L../qmlchewing -lqmlchewing
+LIBS += -L../qmlchewing -lqmlchewing -lchewing
 
 # Input
 

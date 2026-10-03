@@ -14,34 +14,52 @@ private:
   ChewingContext *ct;
 
 public:
-  Chewing(QQuickItem *parent = 0);
-  ~Chewing();
+  explicit Chewing(QQuickItem *parent = nullptr);
+  ~Chewing() override;
 
-  /*Reset ChewingContext*/
+  /**
+   * @brief Reset ChewingContext
+   */
   Q_INVOKABLE void handleReset();
 
-  /*This function will transfer pressed key to chewing engine.*/
-  Q_INVOKABLE void handleDefault(QString);
+  /**
+   * @brief Transfer pressed key to chewing engine
+   * @param The string sent by the pressed key
+   */
+  Q_INVOKABLE void handleDefault(const QString &str);
 
-  /*This function will transfer space key to chewing engine
-    when you don't have keyboard this is useful.*/
+  /**
+   * @brief Transfer space key to chewing engine
+   */
   Q_INVOKABLE void handleSpace();
 
-  /*This function will transfer backspace key to chewing engine.*/
+  /**
+   * @brief Transfer backspace key to chewing engine
+   */
   Q_INVOKABLE void handleBackSpace();
 
-  /*This function will transfer enter key to chewing engine
-    when you don't have keyboard to input.*/
+  /**
+   * @brief Transfer enter key to chewing engine
+   * @return The committed string
+   */
   Q_INVOKABLE QString handleEnter();
 
-  /*This function will return preedit string that include bopomofo.*/
+  /**
+   * @brief Return preedit string that include bopomofo
+   * @return preedit
+   */
   Q_INVOKABLE QString getPreedit();
 
-  /*This function will return candidate string.*/
+  /**
+   * @brief Return candidate string
+   * @return candidate
+   */
   Q_INVOKABLE QString getCandidate();
 
-  /*This function will return Symbol string.*/
-  Q_INVOKABLE QString getSymbol();
+  /**
+   * @brief Read-only access to the underlying context (mainly for testing)
+   */
+  const ChewingContext *context() const { return this->ct; }
 };
 
 #endif // CHEWING_H
