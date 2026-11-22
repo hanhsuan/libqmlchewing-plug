@@ -96,3 +96,7 @@ pkcon install-local libchewing-0.8.5-0.i486.rpm
 
 ## Thanks
 Thank [Arvid](https://github.com/ecryth/libanthy-qml-plugin) for providing a good example that helped me understand how to do it back in 2016.
+
+### Note
+
+- Use of the prebuilt packages in this repository is at the user’s own risk.
