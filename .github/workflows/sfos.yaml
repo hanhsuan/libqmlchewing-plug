@@ -1,0 +1,55 @@
+name: Build Sailfish OS RPM
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        type: string
+        description: 'The release tag defined in https://hub.docker.com/r/coderus/sailfishos-platform-sdk/tags'
+        default: '5.2.0.15'
+      package_tag:
+        type: string
+        description: 'The tag will be used for the release'
+        default: 'v0.1.3'
+      libchewing_version:
+        type: string
+        description: 'The version will be used for the release'
+        default: '0.8.5'
+      publish:
+        type: boolean
+        description: 'Upload rpms to github or not'
+        default: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [aarch64, armv7hl, i486]
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build RPM
+        uses: ./.github/actions/sfos
+        with:
+          release: ${{ github.event.inputs.release_tag }}
+          arch: ${{ matrix.arch }}
+          libchewing_version: ${{ github.event.inputs.libchewing_version }}
+      - name: Create release
+        if: ${{ fromJson(github.event.inputs.publish) }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PK_TAG: ${{ github.event.inputs.package_tag }}
+          RELEASE: ${{ github.event.inputs.release_tag }}
+        run: |
+          set -x
+          assets=()
+          for asset in RPMS/*.rpm; do
+            assets+=("$asset")
+          done
+          if gh release view "${RELEASE}-${PK_TAG}" >/dev/null 2>&1; then
+            gh release upload "${RELEASE}-${PK_TAG}" "${assets[@]}"
+          else
+            gh release create "${RELEASE}-${PK_TAG}" "${assets[@]}" --title "${RELEASE}-${PK_TAG}"
+          fi
