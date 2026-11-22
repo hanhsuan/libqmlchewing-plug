@@ -1,0 +1,29 @@
+# action.yml
+# Based on https://github.com/CODeRUS/github-sfos-build (sfos5 branch)
+name: 'Buildfish'
+description: 'Build SailfishOS apps with Docker'
+inputs:
+  release:
+    description: 'SailfishOS release (check https://hub.docker.com/r/coderus/sailfishos-platform-sdk/tags)'
+    required: true
+    default: 5.2.0.15
+  arch:
+    description: 'Build arch (e.g. armv7hl, i486, aarch64)'
+    default: 'aarch64'
+  suffix:
+    description: 'Docker image suffix. Empty by default'
+    default: ''
+  libchewing_version:
+    description: 'libchewing version to install from hanhsuan/SailfishOS-libchewing (e.g. 0.8.5)'
+    default: '0.8.5'
+
+runs:
+  using: 'composite'
+  steps:
+    - run: bash -ex $GITHUB_ACTION_PATH/build.sh
+      shell: bash
+      env:
+        INPUT_RELEASE: ${{ inputs.release }}
+        INPUT_ARCH: ${{ inputs.arch }}
+        INPUT_SUFFIX: ${{ inputs.suffix }}
+        LIBCHEWING_VERSION: ${{ inputs.libchewing_version }}
